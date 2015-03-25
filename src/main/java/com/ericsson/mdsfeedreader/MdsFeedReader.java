@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.drutt.ws.msdp.media.management.v3.WSException_Exception;
 import com.ericsson.mdsfeedreader.enums.Brand;
 import com.ericsson.mdsfeedreader.enums.Premium;
 import com.ericsson.mdsfeedreader.util.MdsProperties;
@@ -23,7 +22,14 @@ public class MdsFeedReader
     	logger.info("*** MDS Feed Reader started ***");
         MdsReader mdsReader = new MdsReader();
         
-        List<MdsRecord> recordsList = mdsReader.getMdsRecords(null);
+        List<MdsRecord> recordsList = null;
+        
+        if (args.length == 0) {
+        	recordsList = mdsReader.getMdsRecords(null, null);
+        }
+        else {
+        	recordsList = mdsReader.getMdsRecords(args[0], null);
+        }
         
         for (MdsRecord mdsRecord : recordsList) {
         	
@@ -38,6 +44,10 @@ public class MdsFeedReader
         	if ("UPDATE".equalsIgnoreCase(mdsRecord.getSysNcType())) {
         		String updateColumns = mdsRecord.getUpdateColumns();
         		String[] columns = updateColumns.trim().split(",");
+        		
+        		if (columns.length == 0) {
+        			logger.info("No fields to update");
+        		}
         		
         		for (String col : columns) {
         			
@@ -74,16 +84,22 @@ public class MdsFeedReader
 						}
 						if (column.equalsIgnoreCase(mds_vueffdate)) {
 							String vuEffDate = mdsRecord.getVuEffDate();
-							logger.info("Updating asset [externalId:" + externalId + "]: metaKey: GeneralAvailabilityDate - metaValue: " + vuEffDate);
+							logger.info("Updating asset [externalId:" + externalId + "]: metaKey: dateLaunch - metaValue: " + vuEffDate);
 							
-							MediaMgmtApi.updateAssetMeta(externalId, "GeneralAvailabilityDate", vuEffDate);
+							MediaMgmtApi.updateAssetMeta(externalId, "dateLaunch", vuEffDate);
 							logger.info("Asset updated");
 						}
-	        		} catch (WSException_Exception e) {
+	        		} catch (Exception e) {
 						logger.error("Asset not updated");
 						logger.debug(e, e);
 					}
         		}
+        	}
+        	else if ("INSERT".equalsIgnoreCase(mdsRecord.getSysNcType())) {
+        		logger.info("Operation INSERT skipped...");
+        	}
+        	else if ("DELETE".equalsIgnoreCase(mdsRecord.getSysNcType())) {
+        		logger.info("Operation DELETE skipped...");
         	}
         }
         

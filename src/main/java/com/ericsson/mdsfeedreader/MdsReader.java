@@ -19,18 +19,26 @@ public class MdsReader {
 	private static final Logger logger = Logger.getLogger(MdsReader.class);
 	
 	//if null is passed, it will fetch MDS file with today date
-	public List<MdsRecord> getMdsRecords(Date date) {
+	public List<MdsRecord> getMdsRecords(String fileName, Date date) {
 		
 		List<MdsRecord> recordsList = new ArrayList<MdsRecord>();
 		
-		File file = getMdsFile(date);
+		File file = null;
+		if (fileName == null) {
+			file = getMdsFile(date);
+		}
+		else {
+			file = getMdsFile(fileName);
+		}
 		
 		if (file == null) {
-			logger.info("No MDS file found");
+			logger.error("No MDS file found with [today] date");
 			return recordsList;
 		}
 		
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+			logger.info("Parsing MDS file " + file);
+			
 		    String line;
 		    String[] temp;
 		    while ((line = br.readLine()) != null) {
@@ -57,25 +65,40 @@ public class MdsReader {
 				}
 		    }
 		} catch (IOException e) {
-			logger.error(e, e);
+			logger.error("No MDS file found " + file);
+			logger.debug(e, e);
 		}
 		
 		return recordsList;
 	}
 	
+	private static File getMdsFile(String fileName) {
+		try {
+			String filePath = MdsProperties.getDefinition("mds.feed.file.path") + fileName;
+			
+			return new File(filePath);
+		}catch (Exception e) {
+			return null;
+		}
+	}
+	
 	private static File getMdsFile(Date date) {
-		String filesPath = MdsProperties.getDefinition("mds.feed.file.path");
-		String filePrefix = MdsProperties.getDefinition("mds.feed.file.prefix");
-		String fileExt = MdsProperties.getDefinition("mds.feed.file.ext");
-		String dateFormat = MdsProperties.getDefinition("mds.feed.file.dateformat");
-		
-		SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
-		
-		String dateString = sdf.format(date==null?new Date():date);
-		
-		File dir = new File(filesPath);
-		FileFilter filter = new WildcardFileFilter(filePrefix + dateString + "*" + fileExt);
-		
-		return dir.listFiles(filter).length>0? dir.listFiles(filter)[0]:null;	
+		try {
+			String filesPath = MdsProperties.getDefinition("mds.feed.file.path");
+			String filePrefix = MdsProperties.getDefinition("mds.feed.file.prefix");
+			String fileExt = MdsProperties.getDefinition("mds.feed.file.ext");
+			String dateFormat = MdsProperties.getDefinition("mds.feed.file.dateformat");
+			
+			SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+			
+			String dateString = sdf.format(date==null?new Date():date);
+			
+			File dir = new File(filesPath);
+			FileFilter filter = new WildcardFileFilter(filePrefix + dateString + "*" + fileExt);
+			
+			return dir.listFiles(filter).length>0? dir.listFiles(filter)[0]:null;
+		} catch (Exception e) {
+			return null;
+		}
 	}
 }

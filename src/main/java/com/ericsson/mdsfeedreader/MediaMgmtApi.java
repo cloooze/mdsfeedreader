@@ -1,9 +1,20 @@
 package com.ericsson.mdsfeedreader;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.Duration;
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 
 import com.drutt.ws.msdp.media.management.v3.Asset;
@@ -14,6 +25,7 @@ import com.drutt.ws.msdp.media.management.v3.Meta;
 import com.drutt.ws.msdp.media.management.v3.SortItem;
 import com.drutt.ws.msdp.media.management.v3.WSException_Exception;
 import com.drutt.ws.msdp.media.management.v3.WriteAsset;
+import com.ericsson.mdsfeedreader.util.DateUtil;
 import com.ericsson.mdsfeedreader.util.MsdpProperties;
 
 
@@ -76,6 +88,7 @@ public class MediaMgmtApi {
 		List<WriteAsset> listWriteAsset = new ArrayList<WriteAsset>();
 		WriteAsset writeAsset = new WriteAsset();
 		
+		
 		writeAsset.setAssetId(asset.getAssetId());
 		writeAsset.setProviderId(asset.getProviderId());
 		writeAsset.setServiceId(asset.getServiceId());
@@ -92,6 +105,28 @@ public class MediaMgmtApi {
 			}
 		}
 		writeAsset.getMeta().addAll(asset.getMeta());
+		
+		listWriteAsset.add(writeAsset);
+		
+		return getInstance().getMediaApi().updateAssets(listWriteAsset, false);
+	}
+	
+	public static List<Asset> updateAssetDefaultField(String externalId, String startTime) throws WSException_Exception, DatatypeConfigurationException, ParseException {
+		Asset asset = getAssetByExternalId(externalId, providerId).get(0);
+		
+		List<WriteAsset> listWriteAsset = new ArrayList<WriteAsset>();
+		WriteAsset writeAsset = new WriteAsset();
+		
+		
+		writeAsset.setAssetId(asset.getAssetId());
+		writeAsset.setProviderId(asset.getProviderId());
+		writeAsset.setServiceId(asset.getServiceId());
+		writeAsset.setType(asset.getType());
+		writeAsset.setDeployed(true);
+		writeAsset.setOwnerAssetId(asset.getOwnerAssetId());
+		writeAsset.getMeta().addAll(asset.getMeta());
+		
+		writeAsset.setStartTime(DateUtil.getXMLGregorianCalendar(startTime));
 		
 		listWriteAsset.add(writeAsset);
 		
