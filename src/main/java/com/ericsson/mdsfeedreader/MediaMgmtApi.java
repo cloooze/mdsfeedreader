@@ -1,20 +1,11 @@
 package com.ericsson.mdsfeedreader;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.TimeZone;
 
 import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.Duration;
-import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 
 import com.drutt.ws.msdp.media.management.v3.Asset;
@@ -39,6 +30,8 @@ public class MediaMgmtApi {
 	
 //	
 	private static final String MSDP_ENDPOINT = MsdpProperties.getDefinition("msdp.media.api.endpoint");
+	private static final String MSDP_API_USERNAME = MsdpProperties.getDefinition("msdp.media.api.username");
+	private static final String MSDP_API_PASSWORD = MsdpProperties.getDefinition("msdp.media.api.password");
 	
 	protected static MediaMgmtApi getInstance() {
 		if (mediaMgmtApi == null) {
@@ -56,8 +49,8 @@ public class MediaMgmtApi {
 		Map<String, Object> requestContext = ((BindingProvider)mediaApi).getRequestContext();
 		
 		requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, MSDP_ENDPOINT);
-		requestContext.put(BindingProvider.USERNAME_PROPERTY, "msdp-api");
-		requestContext.put(BindingProvider.PASSWORD_PROPERTY, "msdp-api");
+		requestContext.put(BindingProvider.USERNAME_PROPERTY, MSDP_API_USERNAME);
+		requestContext.put(BindingProvider.PASSWORD_PROPERTY, MSDP_API_PASSWORD);
 	}
 	
 	public static List<Asset> getAssetByExternalId(String externalId, String providerId) throws WSException_Exception {

@@ -19,7 +19,7 @@ public class SftpClient {
 	
 	private static final Logger logger = Logger.getLogger(SftpClient.class);
 	
-	public static String getRemoteFile(String fileName) {
+	public static String getRemoteFile(final String fileName) {
 		
         JSch jsch = new JSch();
         Session session = null;

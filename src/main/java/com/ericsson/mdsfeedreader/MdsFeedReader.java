@@ -13,10 +13,7 @@ import com.ericsson.mdsfeedreader.util.MsdpProperties;
 
 public class MdsFeedReader 
 {
-	
 	private static final Logger logger = Logger.getLogger(MdsFeedReader.class);
-	
-	private static final String providerId = MsdpProperties.getDefinition("mdsp.media.providerid");
 	
     public static void main( String[] args )
     {
@@ -49,6 +46,8 @@ public class MdsFeedReader
         		if (columns.length == 0) {
         			logger.info("No fields to update");
         		}
+        		
+        		boolean assetUpdated = true;
         		
         		for (String col : columns) {
         			
@@ -90,10 +89,18 @@ public class MdsFeedReader
 							MediaMgmtApi.updateAssetMeta(externalId, "dateLaunch", vuEffDate);
 							logger.info("Asset updated");
 						}
+						
+						
+						
 	        		} catch (Exception e) {
+	        			assetUpdated = false;
 						logger.error("Execution failed. Asset not updated");
 						logger.debug(e, e);
 					}
+        		}
+        		
+        		if (assetUpdated == true) {
+        			mdsReader.getMdsFileRecords().remove(externalId);
         		}
         	}
         	else if ("INSERT".equalsIgnoreCase(mdsRecord.getSysNcType())) {
@@ -103,16 +110,19 @@ public class MdsFeedReader
         		logger.info("Operation DELETE not supported");
         	}
         }
-        logger.info("Processed file: " + mdsReader.getProcessedFileName());
+        logger.info("Processed file: " + mdsReader.getProcessedMdsFileName());
         
         try {
-        	mdsReader.moveProcessedFile();
+        	mdsReader.moveProcessedMdsFile();
         	logger.info("Processed file moved to: " + MdsProperties.getDefinition("mds.feed.file.processed.path"));
         } catch(IOException e) {
         	logger.error("Impossible to move processed file");
         	logger.debug(e, e);
         }
         
+        mdsReader.createMdsErrorFile();
+        
         logger.info("*** MDS Feed Reader completed ***");
+        
     }
 }
