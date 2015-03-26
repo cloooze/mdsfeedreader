@@ -1,5 +1,6 @@
 package com.ericsson.mdsfeedreader;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -90,17 +91,26 @@ public class MdsFeedReader
 							logger.info("Asset updated");
 						}
 	        		} catch (Exception e) {
-						logger.error("Asset not updated");
+						logger.error("Execution failed. Asset not updated");
 						logger.debug(e, e);
 					}
         		}
         	}
         	else if ("INSERT".equalsIgnoreCase(mdsRecord.getSysNcType())) {
-        		logger.info("Operation INSERT skipped...");
+        		logger.info("Operation INSERT not supported");
         	}
         	else if ("DELETE".equalsIgnoreCase(mdsRecord.getSysNcType())) {
-        		logger.info("Operation DELETE skipped...");
+        		logger.info("Operation DELETE not supported");
         	}
+        }
+        logger.info("Processed file: " + mdsReader.getProcessedFileName());
+        
+        try {
+        	mdsReader.moveProcessedFile();
+        	logger.info("Processed file moved to: " + MdsProperties.getDefinition("mds.feed.file.processed.path"));
+        } catch(IOException e) {
+        	logger.error("Impossible to move processed file");
+        	logger.debug(e, e);
         }
         
         logger.info("*** MDS Feed Reader completed ***");
