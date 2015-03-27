@@ -90,8 +90,7 @@ public class MediaMgmtApi {
 		writeAsset.setOwnerAssetId(asset.getOwnerAssetId());
 		
 		if (metaKey != null && !metaKey.isEmpty()) {
-			List<Meta> metas = asset.getMeta();
-			for (Meta meta : metas) {
+			for (Meta meta : asset.getMeta()) {
 				if (meta.getKey().equalsIgnoreCase(metaKey)) {
 					meta.setValue(metaValue);
 				}
@@ -104,6 +103,7 @@ public class MediaMgmtApi {
 		return getInstance().getMediaApi().updateAssets(listWriteAsset, false);
 	}
 	
+	@Deprecated
 	public static List<Asset> updateAssetDefaultField(String externalId, String startTime) throws WSException_Exception, DatatypeConfigurationException, ParseException {
 		Asset asset = getAssetByExternalId(externalId, providerId).get(0);
 		

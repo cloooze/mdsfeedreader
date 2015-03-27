@@ -41,8 +41,8 @@ public class MdsReader {
 			this.mdsFile = getMdsFile(fileName);
 		}
 		
-		if (this.mdsFile == null) {
-			logger.error("No MDS file found with [today] date");
+		if (this.mdsFile == null || !this.mdsFile.isFile()) {
+			logger.error("No valid MDS file found with [today] date");
 			return recordsList;
 		}
 		
@@ -83,7 +83,9 @@ public class MdsReader {
 		return recordsList;
 	}
 	
-	
+	public File getMdsFile() {
+		return this.mdsFile;
+	}
 	
 	public Map<String, String> getMdsFileRecords() {
 		return mdsFileRecords;
@@ -93,59 +95,57 @@ public class MdsReader {
 		this.mdsFileRecords = mdsFileRecords;
 	}
 
-
-
 	public void moveProcessedMdsFile() throws IOException {
-		String processedFilePath = MdsProperties.getDefinition("mds.feed.file.processed.path");
-		
-		Path sourcePath = this.mdsFile.toPath();
-		Path destPath = Paths.get(processedFilePath);
-		
-		if (!Files.exists(destPath)) {
-			Files.createDirectory(destPath);
+		if (mdsFile != null && mdsFile.isFile()) {
+			String processedFilePath = MdsProperties.getDefinition("mds.feed.file.processed.path");
+			
+			Path sourcePath = this.mdsFile.toPath();
+			Path destPath = Paths.get(processedFilePath);
+			
+			if (!Files.exists(destPath)) {
+				Files.createDirectory(destPath);
+			}
+			
+			Files.move(sourcePath, Paths.get(destPath + File.separator + this.mdsFile.getName()), StandardCopyOption.REPLACE_EXISTING);
+			
+			logger.info("Processed file moved to: " + MdsProperties.getDefinition("mds.feed.file.processed.path"));
 		}
-		
-		Files.move(sourcePath, Paths.get(destPath + File.separator + this.mdsFile.getName()), StandardCopyOption.REPLACE_EXISTING);
 	}
 	
-	public void createMdsErrorFile() {
-		String header = MdsProperties.getDefinition("mds.feed.file.error.header");
-		String errorFilePath = MdsProperties.getDefinition("mds.feed.file.error.path");
-		String errorFileName = MdsProperties.getDefinition("mds.feed.file.error.fileName");
-		
-		BufferedWriter writer = null;
-        try {
-            String timeLog = new SimpleDateFormat("yyyyMMddHHmmss").format(Calendar.getInstance().getTime());
-            String fileNameNew = String.format(errorFileName, timeLog, this.mdsFile.getName());
-            File file = new File(errorFilePath + fileNameNew);
-            
-            if (!Files.exists(Paths.get(errorFilePath))) {
-    			Files.createDirectory(Paths.get(errorFilePath));
-    		}
-
-            writer = new BufferedWriter(new FileWriter(file));
-            
-            writer.write(header);
-            
-            
-            for (String externalId : this.getMdsFileRecords().keySet()) {
-            	writer.newLine();
-            	writer.write(this.getMdsFileRecords().get(externalId));
-            }
-            
-        } catch (Exception e) {
-        	logger.debug(e, e);
-        } finally {
-            try {
-                writer.close();
-            } catch (Exception e) {
-            	//do nothing
-            }
-        }
+	public void createMdsErrorFile() throws IOException {
+		if (this.mdsFile != null && this.mdsFile.isFile()) {
+			String header = MdsProperties.getDefinition("mds.feed.file.error.header");
+			String errorFilePath = MdsProperties.getDefinition("mds.feed.file.error.path");
+			String errorFileName = MdsProperties.getDefinition("mds.feed.file.error.fileName");
+			
+			BufferedWriter writer = null;
+			
+	        String timeLog = new SimpleDateFormat("yyyyMMddHHmmss").format(Calendar.getInstance().getTime());
+	        String fileNameNew = String.format(errorFileName, timeLog, this.mdsFile.getName());
+	        File file = new File(errorFilePath + fileNameNew);
+	        
+	        if (!Files.exists(Paths.get(errorFilePath))) {
+				Files.createDirectory(Paths.get(errorFilePath));
+			}
+	
+	        writer = new BufferedWriter(new FileWriter(file));
+	        
+	        writer.write(header);
+	        
+	        
+	        for (String externalId : this.getMdsFileRecords().keySet()) {
+	        	writer.newLine();
+	        	writer.write(this.getMdsFileRecords().get(externalId));
+	        }
+	        
+	        writer.close();
+	        
+	        logger.info("Error file created in: " + MdsProperties.getDefinition("mds.feed.file.error.path"));
+		}
 	}
 	
 	public String getProcessedMdsFileName() {
-		if (this.mdsFile != null)
+		if (this.mdsFile != null && this.mdsFile.isFile())
 			return this.mdsFile.getName();
 		else 
 			return null;

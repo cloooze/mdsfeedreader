@@ -89,17 +89,13 @@
                 <include>msdp.properties</include>
             </includes>
         </resource>
-        <!-- 
-         <resource>
-            <directory>src/main/resources</directory>
-            <excludes>
-               <exclude>log4j.properties</exclude>
-               <exclude>mds.properties</exclude>
-               <exclude>msdp.properties</exclude>
-            </excludes>
-            <filtering>true</filtering>
-         </resource>
-         -->
+        <resource>
+            <directory>script</directory>
+            <targetPath>${project.build.directory}</targetPath>
+            <includes>
+                <include>mdsfeedreaderStart.sh</include>
+            </includes>
+        </resource>
       </resources>
    </build>
 </project>

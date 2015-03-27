@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 import com.ericsson.mdsfeedreader.enums.Brand;
 import com.ericsson.mdsfeedreader.enums.Premium;
 import com.ericsson.mdsfeedreader.util.MdsProperties;
-import com.ericsson.mdsfeedreader.util.MsdpProperties;
 
 
 public class MdsFeedReader 
@@ -89,9 +88,6 @@ public class MdsFeedReader
 							MediaMgmtApi.updateAssetMeta(externalId, "dateLaunch", vuEffDate);
 							logger.info("Asset updated");
 						}
-						
-						
-						
 	        		} catch (Exception e) {
 	        			assetUpdated = false;
 						logger.error("Execution failed. Asset not updated");
@@ -110,19 +106,25 @@ public class MdsFeedReader
         		logger.info("Operation DELETE not supported");
         	}
         }
-        logger.info("Processed file: " + mdsReader.getProcessedMdsFileName());
+        
+        if (mdsReader.getMdsFile() != null && mdsReader.getMdsFile().isFile()) {
+        	logger.info("Processed file: " + mdsReader.getProcessedMdsFileName());
+        }
+        
+        try {
+        	mdsReader.createMdsErrorFile();
+        } catch(IOException e) {
+        	logger.error("Impossible to create error file");
+        	logger.debug(e, e);
+        }
         
         try {
         	mdsReader.moveProcessedMdsFile();
-        	logger.info("Processed file moved to: " + MdsProperties.getDefinition("mds.feed.file.processed.path"));
         } catch(IOException e) {
         	logger.error("Impossible to move processed file");
         	logger.debug(e, e);
         }
         
-        mdsReader.createMdsErrorFile();
-        
         logger.info("*** MDS Feed Reader completed ***");
-        
     }
 }
