@@ -85,7 +85,7 @@ public class MdsFeedReader
 							String vuEffDate = mdsRecord.getVuEffDate();
 							logger.info("Updating asset [externalId:" + externalId + "]: metaKey: dateLaunch - metaValue: " + vuEffDate);
 							
-							MediaMgmtApi.updateAssetMeta(externalId, "dateLaunch", vuEffDate);
+							MediaMgmtApi.updateMetaStartTime(externalId, vuEffDate);
 							logger.info("Asset updated");
 						}
 	        		} catch (Exception e) {
@@ -100,10 +100,49 @@ public class MdsFeedReader
         		}
         	}
         	else if ("INSERT".equalsIgnoreCase(mdsRecord.getSysNcType())) {
-        		logger.info("Operation INSERT not supported");
+        		logger.info("Creating asset [externalId:" + externalId + "]");
+        		boolean assetInsert = true;
+        		
+        		try {
+        			
+	    			assetInsert = MediaMgmtApi.createNewAsset(
+	        				mdsRecord.getItemId(), 
+	        				"name", 
+	        				Brand.valueOf(mdsRecord.getVuBrand()), 
+	        				"Promotional Discount", 
+	        				mdsRecord.getVuEffDate(), 
+	        				mdsRecord.getVuEqp(), 
+	        				mdsRecord.getProductSet());
+	    			
+	    			logger.info("Asset created");
+    			
+				} catch (Exception e) {
+					assetInsert = false;
+					logger.error("Execution failed. Asset not inserted");
+					logger.debug(e, e);
+				}
+        		
+        		if (assetInsert == true) {
+        			mdsReader.getMdsFileRecords().remove(externalId);
+        		}
         	}
         	else if ("DELETE".equalsIgnoreCase(mdsRecord.getSysNcType())) {
-        		logger.info("Operation DELETE not supported");
+        		logger.info("Deleting asset [externalId:" + externalId + "]");
+        		boolean assetDelete = true;
+        		
+        		try {
+					MediaMgmtApi.updateMetaValidUntil(externalId, mdsRecord.getVuEffDate());
+					
+					logger.info("Asset deleted");
+				} catch (Exception e) {
+					assetDelete = false;
+					logger.error("Execution failed. Asset not deleted");
+					logger.debug(e, e);
+				} 
+        		
+        		if (assetDelete == true) {
+        			mdsReader.getMdsFileRecords().remove(externalId);
+        		}
         	}
         }
         

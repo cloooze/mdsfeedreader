@@ -11,7 +11,7 @@ mkdir -p ${REL_PATH}/log
 mkdir -p ${REL_PATH}/data/processed
 mkdir -p ${REL_PATH}/data/error
 
-java -jar ${JAR_FILE_NAME} $1 > /dev/null 2>&1
+java -jar ${JAR_FILE_NAME} $1 > /dev/null 2>&1 &
 
 
 #delete processed files older than 24hours

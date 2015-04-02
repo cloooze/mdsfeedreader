@@ -113,7 +113,7 @@ public class MdsReader {
 	}
 	
 	public void createMdsErrorFile() throws IOException {
-		if (this.mdsFile != null && this.mdsFile.isFile()) {
+		if (this.mdsFile != null && this.mdsFile.isFile() && this.getMdsFileRecords().size() > 0) {
 			String header = MdsProperties.getDefinition("mds.feed.file.error.header");
 			String errorFilePath = MdsProperties.getDefinition("mds.feed.file.error.path");
 			String errorFileName = MdsProperties.getDefinition("mds.feed.file.error.fileName");
