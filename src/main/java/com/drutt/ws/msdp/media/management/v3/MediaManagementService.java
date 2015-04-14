@@ -30,7 +30,7 @@ public class MediaManagementService
         URL url = null;
         WebServiceException e = null;
         try {
-            url = new URL("http://10.1.10.5:8081/repository/wsdl/mngapi-v3.wsdl");
+            url = new URL("http://127.0.0.1:8081/repository/wsdl/mngapi-v3.wsdl");
         } catch (MalformedURLException ex) {
             e = new WebServiceException(ex);
         }

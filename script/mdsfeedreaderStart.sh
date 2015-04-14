@@ -15,6 +15,6 @@ java -jar ${JAR_FILE_NAME} $1 > /dev/null 2>&1 &
 
 
 #delete processed files older than 24hours
-find ${REL_PATH}/data/processed/* -mtime +1 -exec rm {} \;
+find ${REL_PATH}/data/processed -mtime +1 -exec rm {} \;
 
 

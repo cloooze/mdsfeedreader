@@ -2,8 +2,8 @@ package com.ericsson.mdsfeedreader.enums;
 
 public enum Premium {
 	
-	N ("NO"),
-	Y ("YES");
+	N ("false"),
+	Y ("true");
 	
 	private final String premium;
 	

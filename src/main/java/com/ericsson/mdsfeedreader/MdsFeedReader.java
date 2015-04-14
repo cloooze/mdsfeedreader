@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 
 import com.ericsson.mdsfeedreader.enums.Brand;
 import com.ericsson.mdsfeedreader.enums.Premium;
+import com.ericsson.mdsfeedreader.util.MailSender;
 import com.ericsson.mdsfeedreader.util.MdsProperties;
 
 
@@ -57,28 +58,30 @@ public class MdsFeedReader
 							String vuBrand = mdsRecord.getVuBrand();
 							logger.info("Updating asset [externalId:" + externalId + "]: metaKey: BrandId - metaValue: " + vuBrand);
 							
-							MediaMgmtApi.updateAssetMeta(externalId, "brandId", Brand.valueOf(vuBrand).toString());
+							MediaMgmtApi.updateAssetDiscountMeta(externalId, "brandId", Brand.valueOf(vuBrand).toString());
 							logger.info("Asset updated");
 						}
 						if (column.equalsIgnoreCase(mds_vueqp)) {
 							String vuEqp = mdsRecord.getVuEqp();
 							logger.info("Updating asset [externalId:" + externalId + "]: metaKey: EQP - metaValue: " + vuEqp);
 							
-							MediaMgmtApi.updateAssetMeta(externalId, "EQP", vuEqp);
+							MediaMgmtApi.updateAssetDiscountMeta(externalId, "EQP", vuEqp);
 							logger.info("Asset updated");
 						}
 						if (column.equalsIgnoreCase(mds_awpremium)) {
+							String extId = mdsRecord.getVuBrand().toLowerCase() +"_"+ externalId;
 							String aqPremium = mdsRecord.getAwPremium();
-							logger.info("Updating asset [externalId:" + externalId + "]: metaKey: isPremium - metaValue: " + Premium.valueOf(aqPremium).toString());
+							logger.info("Updating asset [externalId:" + extId + "]: metaKey: isPremium - metaValue: " + Premium.valueOf(aqPremium).toString());
 							
-							MediaMgmtApi.updateAssetMeta(externalId, "isPremium", Premium.valueOf(aqPremium).toString());
+							MediaMgmtApi.updateAssetPhoneMeta(extId, "isPremium", Premium.valueOf(aqPremium).toString());
 							logger.info("Asset updated");
 						}
 						if (column.equalsIgnoreCase(mds_msrp)) {
+							String extId = mdsRecord.getVuBrand().toLowerCase() +"_"+ externalId;
 							String msrp = mdsRecord.getMsrp();
-							logger.info("Updating asset [externalId:" + externalId + "]: metaKey: MSRP - metaValue: " + msrp);
+							logger.info("Updating asset [externalId:" + extId + "]: metaKey: MSRP - metaValue: " + msrp);
 							
-							MediaMgmtApi.updateAssetMeta(externalId, "MSRP", msrp);
+							MediaMgmtApi.updateAssetPhoneMeta(extId, "MSRP", msrp);
 							logger.info("Asset updated");
 						}
 						if (column.equalsIgnoreCase(mds_vueffdate)) {
@@ -91,6 +94,7 @@ public class MdsFeedReader
 	        		} catch (Exception e) {
 	        			assetUpdated = false;
 						logger.error("Execution failed. Asset not updated");
+						MailSender.sendEmail("MDS action UPDATE error", "MDS synchronizer action UPDATE error. Please find error folder to process the file manually");
 						logger.debug(e, e);
 					}
         		}
@@ -107,18 +111,20 @@ public class MdsFeedReader
         			
 	    			assetInsert = MediaMgmtApi.createNewAsset(
 	        				mdsRecord.getItemId(), 
-	        				"name", 
+	        				mdsRecord.getItemId(), 
 	        				Brand.valueOf(mdsRecord.getVuBrand()), 
 	        				"Promotional Discount", 
 	        				mdsRecord.getVuEffDate(), 
 	        				mdsRecord.getVuEqp(), 
-	        				mdsRecord.getProductSet());
+	        				mdsRecord.getProductSet(),
+	        				"discount");
 	    			
 	    			logger.info("Asset created");
     			
 				} catch (Exception e) {
 					assetInsert = false;
 					logger.error("Execution failed. Asset not inserted");
+					MailSender.sendEmail("MDS action INSERT error", "MDS synchronizer action INSERT error. Please find error folder to process the file manually");
 					logger.debug(e, e);
 				}
         		
@@ -137,6 +143,7 @@ public class MdsFeedReader
 				} catch (Exception e) {
 					assetDelete = false;
 					logger.error("Execution failed. Asset not deleted");
+					MailSender.sendEmail("MDS action DELETE error", "MDS synchronizer action DELETE error. Please find error folder to process the file manually");
 					logger.debug(e, e);
 				} 
         		

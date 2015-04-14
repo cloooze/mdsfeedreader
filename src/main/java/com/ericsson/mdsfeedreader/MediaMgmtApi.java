@@ -1,5 +1,7 @@
 package com.ericsson.mdsfeedreader;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +21,7 @@ import com.drutt.ws.msdp.media.management.v3.WriteAsset;
 import com.ericsson.mdsfeedreader.enums.Brand;
 import com.ericsson.mdsfeedreader.util.DateUtil;
 import com.ericsson.mdsfeedreader.util.MsdpProperties;
+import com.jcraft.jsch.Logger;
 
 
 public class MediaMgmtApi {
@@ -29,6 +32,8 @@ public class MediaMgmtApi {
 	
 	private final static String DISCOUNT_providerId = MsdpProperties.getDefinition("mdsp.media.discount.providerid");
 	private final static String DISCOUNT_serviceId = MsdpProperties.getDefinition("mdsp.media.discount.serviceid");
+	private final static String PHONE_providerId = MsdpProperties.getDefinition("mdsp.media.phone.providerid");
+	private final static String PHONE_serviceId = MsdpProperties.getDefinition("mdsp.media.phone.serviceid");
 	
 //	
 	private static final String MSDP_ENDPOINT = MsdpProperties.getDefinition("msdp.media.api.endpoint");
@@ -44,13 +49,17 @@ public class MediaMgmtApi {
 	}
 	
 	protected MediaMgmtApi () {
-		mediaService = new MediaManagementService();
+		try {
+			mediaService = new MediaManagementService(new URL(MSDP_ENDPOINT));
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
 		
 		mediaApi = mediaService.getMediaMngServiceImplPort();
 		
 		Map<String, Object> requestContext = ((BindingProvider)mediaApi).getRequestContext();
 		
-		requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, MSDP_ENDPOINT);
+//		requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, MSDP_ENDPOINT);
 		requestContext.put(BindingProvider.USERNAME_PROPERTY, MSDP_API_USERNAME);
 		requestContext.put(BindingProvider.PASSWORD_PROPERTY, MSDP_API_PASSWORD);
 	}
@@ -71,7 +80,7 @@ public class MediaMgmtApi {
 		return getInstance().getMediaApi().getAssetsByExternalAssetId(providerId, skus, includeItems);
 	}
 	
-	public static void updateAssetMeta(String externalId, String metaKey, String metaValue) throws WSException_Exception {
+	public static void updateAssetDiscountMeta(String externalId, String metaKey, String metaValue) throws WSException_Exception {
 		List<Asset> listAsset = getAssetByExternalId(externalId, DISCOUNT_providerId);
 		
 		Asset asset = listAsset.get(0);
@@ -79,7 +88,15 @@ public class MediaMgmtApi {
 		updateAsset(asset, metaKey, metaValue);
 	}
 	
-	public static List<Asset> updateAsset(Asset asset, String metaKey, String metaValue) throws WSException_Exception {
+	public static void updateAssetPhoneMeta(String externalId, String metaKey, String metaValue) throws WSException_Exception {
+		List<Asset> listAsset = getAssetByExternalId(externalId, PHONE_providerId);
+		
+		Asset asset = listAsset.get(0);
+		
+		updateAsset(asset, metaKey, metaValue);
+	}
+	
+	private static List<Asset> updateAsset(Asset asset, String metaKey, String metaValue) throws WSException_Exception {
 		List<WriteAsset> listWriteAsset = new ArrayList<WriteAsset>();
 		WriteAsset writeAsset = new WriteAsset();
 		
@@ -91,13 +108,24 @@ public class MediaMgmtApi {
 		writeAsset.setDeployed(true);
 		writeAsset.setOwnerAssetId(asset.getOwnerAssetId());
 		
+		boolean found = false;
+		
 		if (metaKey != null && !metaKey.isEmpty()) {
 			for (Meta meta : asset.getMeta()) {
 				if (meta.getKey().equalsIgnoreCase(metaKey)) {
 					meta.setValue(metaValue);
+					found = true;
 				}
 			}
 		}
+		
+		if (!found) {
+			Meta m = new Meta();
+			m.setKey(metaKey);
+			m.setValue(metaValue);
+			asset.getMeta().add(m);
+		}
+		
 		writeAsset.getMeta().addAll(asset.getMeta());
 		
 		listWriteAsset.add(writeAsset);
@@ -149,7 +177,7 @@ public class MediaMgmtApi {
 		return getInstance().getMediaApi().updateAssets(listWriteAsset, false);
 	}
 	
-	public static boolean createNewAsset(String externalId, String name, Brand brandId, String description, String effDate, String eqp, String productSet) throws DatatypeConfigurationException, ParseException, WSException_Exception {
+	public static boolean createNewAsset(String externalId, String name, Brand brandId, String description, String effDate, String eqp, String productSet, String type) throws DatatypeConfigurationException, ParseException, WSException_Exception {
 		List<WriteAsset> assetList = new ArrayList<WriteAsset>();
 		
 		WriteAsset writeAsset = new WriteAsset();
@@ -158,7 +186,7 @@ public class MediaMgmtApi {
 //		writeAsset.setAssetId(externalId);
 		writeAsset.setOwnerAssetId(externalId);
 		writeAsset.setProviderId(DISCOUNT_providerId);
-		writeAsset.setType("discount");
+		writeAsset.setType(type);
 		writeAsset.setStartTime(DateUtil.getXMLGregorianCalendar(effDate));
 		
 		List<Meta> metaList = writeAsset.getMeta();
