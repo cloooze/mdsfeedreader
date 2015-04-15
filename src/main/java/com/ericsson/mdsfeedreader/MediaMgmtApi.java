@@ -21,7 +21,6 @@ import com.drutt.ws.msdp.media.management.v3.WriteAsset;
 import com.ericsson.mdsfeedreader.enums.Brand;
 import com.ericsson.mdsfeedreader.util.DateUtil;
 import com.ericsson.mdsfeedreader.util.MsdpProperties;
-import com.jcraft.jsch.Logger;
 
 
 public class MediaMgmtApi {

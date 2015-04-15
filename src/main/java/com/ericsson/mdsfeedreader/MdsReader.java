@@ -29,7 +29,7 @@ public class MdsReader {
 	private File mdsFile = null;
 	private Map<String, String> mdsFileRecords = new HashMap<String, String>();
 	
-	//if null is passed, it will fetch MDS file with today date
+	//if null is passed, it will fetch MDS remote file with today date
 	public List<MdsRecord> getMdsRecords(String fileName, Date date) {
 		
 		List<MdsRecord> recordsList = new ArrayList<MdsRecord>();
