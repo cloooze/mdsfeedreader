@@ -1,5 +1,6 @@
 package com.ericsson.mdsfeedreader.util;
 
+import java.io.File;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -36,13 +37,13 @@ public class SftpClient {
             logger.info("Fetching remote MDS file (matching reg expr): " + MDS_REMOTE_IP + ":" + MDS_REMOTE_PATH + fileName);
             
             //fetch all files from remote directory
-            Vector<ChannelSftp.LsEntry> lsResult = sftpChannel.ls(fileName);
+            Vector<ChannelSftp.LsEntry> lsResult = sftpChannel.ls(MDS_REMOTE_PATH + File.separator + fileName);
             
             if (lsResult.size() == 0) {
             	return null;
             }
             
-            sftpChannel.get(MDS_REMOTE_PATH + fileName, MDS_LOCAL_PATH + lsResult.get(0).getFilename());
+            sftpChannel.get(MDS_REMOTE_PATH + File.separator + fileName, MDS_LOCAL_PATH + File.separator + lsResult.get(0).getFilename());
             logger.info("MDS file succesfully downloaded to location: " + MDS_LOCAL_PATH + lsResult.get(0).getFilename());
             
             sftpChannel.exit();
