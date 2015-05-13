@@ -58,7 +58,7 @@ public class MdsFeedReader
 							String vuBrand = mdsRecord.getVuBrand();
 							logger.info("Updating asset [externalId:" + externalId + "]: metaKey: BrandId - metaValue: " + vuBrand);
 							
-							MediaMgmtApi.updateAssetDiscountMeta(externalId, "brandId", Brand.valueOf(vuBrand).toString());
+							MediaMgmtApi.updateAssetDiscountMeta(externalId, "brandId", vuBrand);
 							logger.info("Asset updated");
 						}
 						if (column.equalsIgnoreCase(mds_vueqp)) {
